@@ -6,8 +6,10 @@ import pandas as pd
 import re
 
 from script.common.common import (
-    conn_bd_oemz, insert_records_of_loads, parse_date_path,
-    zero_time_dt, to_datetime_in_list, symbols_for_query
+    parse_date_path, zero_time_dt, to_datetime_in_list
+)
+from script.common.database import (
+    conn_bd_oemz, insert_records_of_loads, symbols_for_query
 )
 
 

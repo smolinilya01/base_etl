@@ -3,10 +3,13 @@
 import datetime as dt
 import shutil
 
-from script.common.common import (
-    load_table_in_xlsheet, run_macro, zero_time_dt, load_data_from_db,
-    true_date, def_smena, convert_xltime, date_range
+from script.common.excel import (
+    load_table_in_xlsheet, run_macro, convert_xltime,
 )
+from script.common.common import (
+    zero_time_dt, true_date, def_smena, date_range
+)
+from script.common.database import load_data_from_db
 
 
 def prep_vp_xlfile(vpname1):
