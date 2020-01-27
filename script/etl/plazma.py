@@ -5,9 +5,8 @@ import pandas as pd
 import os
 import xlrd
 
-from script.common.common import (
-    conn_bd_oemz, to_datetime_in_list, symbols_for_query
-)
+from script.common.common import to_datetime_in_list
+from script.common.database import (conn_bd_oemz, symbols_for_query)
 
 
 def load_plazma_tables(path1):

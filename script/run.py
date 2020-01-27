@@ -5,7 +5,8 @@ Execution script with windows planner
 
 import datetime as dt
 
-from script.common.common import (check_func, check_data_in_db)
+from script.common.common import check_func
+from script.common.database import check_data_in_db
 from script.etl.nomenclature import load_nomenclature
 from script.etl.inputs import load_inputs
 from script.etl.clients import load_clients
