@@ -2,7 +2,7 @@
 
 import pandas as pd
 
-from script.common.common import (conn_bd_oemz, insert_records_of_loads)
+from script.common.database import (conn_bd_oemz, insert_records_of_loads)
 
 
 def load_nomenclature():
