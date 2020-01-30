@@ -7,12 +7,9 @@ import pandas as pd
 from script.common.error import StartEndDateError
 
 
-def conn_bd_oemz():
+def conn_bd_oemz() -> sql.connect:
     """
     Подключается к базе bd_oemz.bd3
-
-    :return
-        объект sqlite3.connection
     """
     conn = sql.connect(
         r"\\oemz-fs01.oemz.ru\Works$\Analytics\Database\bd_oemz.bd3",
@@ -21,7 +18,13 @@ def conn_bd_oemz():
     return conn
 
 
-def load_data_from_db(table_name1, cols_name1, date_col=None, start_date=None, end_date=None):
+def load_data_from_db(
+        table_name1,
+        cols_name1,
+        date_col=None,
+        start_date=None,
+        end_date=None
+) -> pd.DataFrame:
     """
     Универсальная функция дял загрузки данных из базы для простого запроса
 
@@ -30,9 +33,8 @@ def load_data_from_db(table_name1, cols_name1, date_col=None, start_date=None, e
     :param date_col: наименование столбца с форматов Timestamp для отбора по нему в формате str
     :param start_date: дата начала выборки в формате dt.datetime
     :param end_date: дата конца выборки в формате dt.datetime (что бы выбрать включительно 2019.01.01,
-                                нужно либо dt.datetime(2019,1,2) либо dt.datetime(2019,1,2,23,59,59)
+    нужно либо dt.datetime(2019,1,2) либо dt.datetime(2019,1,2,23,59,59)
     :raise: если date_col, start_date, end_date не все заполнены
-    :return: pd.DataFrame
     """
     with conn_bd_oemz() as conn:
         cur = conn.cursor()
@@ -51,13 +53,12 @@ def load_data_from_db(table_name1, cols_name1, date_col=None, start_date=None, e
         return data
 
 
-def check_data_in_db(name_data1):
+def check_data_in_db(name_data1: str) -> bool:
     """
     Проверяет, есть ли сегодня загруженные данные по необходимым данным. Возвращает bool
     Используется для определения, нужно ли производить формировние отчета
 
     :param name_data1: str наименование данных, которые надоп роверить
-    :return: bool
     """
     with conn_bd_oemz() as conn:
         cur = conn.cursor()
@@ -69,16 +70,12 @@ def check_data_in_db(name_data1):
         return name_data1 in availability
 
 
-def return_name_cols(table1, cur1):
+def return_name_cols(table1, cur1) -> tuple:
     """
     Возвращает список наименований столбцов из таблицы table1 базы данных bd_oemz.bd3
 
-    :arg
-        table1 - str like 'vp_164'
-        cur1 - объект sqlite3.connection.cursor
-
-    :return
-        tuple
+    :arg table1 - str like 'vp_164'
+    :arg cur1 - объект sqlite3.connection.cursor
     """
     cur1.execute(f"""pragma table_info({table1})""")
     names_col = cur1.fetchall()
@@ -92,13 +89,10 @@ def symbols_for_query(name_table1, cur1):
     """
     Возвращает 2 списка
 
-    :arg
-        name_table1 - str like 'vp_164'
-        cur1 - объект sqlite3.connection.cursor
-
-    :returns
-        cols_for_query - список столбцов в которые нужно добавить значения (все столбцы в таблице name_table1 кроме id)
-        syms_for_query - список из необходиого кол-ва знаков ? для запроса
+    :arg name_table1 - str like 'vp_164'
+    :arg cur1 - объект sqlite3.connection.cursor
+    :returns cols_for_query - список столбцов в которые нужно добавить значения (все столбцы в таблице name_table1 кроме id)
+    :returns syms_for_query - список из необходиого кол-ва знаков ? для запроса
     """
     cols = return_name_cols(name_table1, cur1)
     cols_for_query = ','.join(cols)
@@ -106,13 +100,12 @@ def symbols_for_query(name_table1, cur1):
     return cols_for_query, syms_for_query
 
 
-def insert_records_of_loads(cur1, name1):
+def insert_records_of_loads(cur1, name1) -> None:
     """
     Добавляет запись о добавлении данных в нужную таблицу в базе bd_oemz.bd3 !без commit!
 
-    :arg
-        name1 - наименование таблицы, куда добавилась запись, string like 'inputs'
-        cur1 - объект sqlite3.connection.cursor
+    :arg name1 - наименование таблицы, куда добавилась запись, string like 'inputs'
+    :arg cur1 - объект sqlite3.connection.cursor
     """
     cur1.execute("""CREATE TABLE IF NOT EXISTS records_of_loads(
                     id INTEGER PRIMARY KEY,

@@ -13,13 +13,13 @@ from script.common.database import (
 )
 
 
-def load_vp(name_table1):
+def load_vp(name_table1: str) -> None:
     """
     Загружает данные по станку в таблицу name_table1 базы bd_oemz.bd3
 
-    :arg
-        name_table1 - наименование таблицы либо 'vp_164', либо 'vpx_94'
+    :arg name_table1 - наименование таблицы либо 'vp_164', либо 'vpx_94'
     """
+    name_table1 = name_table1.lower()  # поменялись пути к файлам, теперь они с заклавными буквами
     with conn_bd_oemz() as conn:
         cur = conn.cursor()
         cur.execute(f"""CREATE TABLE IF NOT EXISTS {name_table1}(
@@ -66,18 +66,14 @@ def load_vp(name_table1):
         conn.commit()
 
 
-def last_date_from_vp_db(cur1, name_table1):
+def last_date_from_vp_db(cur1, name_table1) -> dt.datetime:
     """
     Загружает последнюю дату (timestamp) записи из таблицы из базы bd_oemz.bd3
     Если вдруг нет данных в таблице и вернулся None, то значение last_date = dt.datetime(year=2000, month=1, day=1),
     это позволит сделать выборку со всеми записями, ничего не отбрасывая.
 
-    :arg
-        cur1 - объект sqlite3.connection.cursor
-        table_vp1 - str like 'vp_164' таблица, из которой нужно получить последнюю дату
-
-    :return
-        dt.datetime
+    :arg cur1 - объект sqlite3.connection.cursor
+    :arg table_vp1 - str like 'vp_164' таблица, из которой нужно получить последнюю дату
     """
     cur1.execute(f"""SELECT MAX(c_0) FROM {name_table1}""")
     last_date = cur1.fetchall()[0][0]
@@ -88,15 +84,12 @@ def last_date_from_vp_db(cur1, name_table1):
     return last_date
 
 
-def table_from_txt(paths1):
+def table_from_txt(paths1) -> pd.DataFrame:
     """
     Собирает в цикле таблицу из текстовых файлов по станкам vp, файлы уже взяты с нужной датой
 
-    :arg
-        paths1 - список путей к нужным файлам (которые удовлетворяют по дате из filter_date), буду добавлять туда table_files.path.values
-
-    :return
-        pd.DataFrame
+    :arg paths1 - список путей к нужным файлам (которые удовлетворяют по дате из filter_date),
+    буду добавлять туда table_files.path.values
     """
     done_table = pd.DataFrame()
     for i in paths1:
@@ -105,7 +98,7 @@ def table_from_txt(paths1):
     return done_table
 
 
-def reshape_table_from_txt(table1, last_date1):
+def reshape_table_from_txt(table1, last_date1) -> pd.DataFrame:
     """
     Преобразование таблицы из функции table_from_txt() для загрузки в базу
         - объединяет столбцы 0 и 6 в один столбец 0 с форматом datetime (автоматом в timestamp переводится)
@@ -114,12 +107,8 @@ def reshape_table_from_txt(table1, last_date1):
         - преобразовывает из pandas.DataFrame в list
         - преобразовывает 0 столбец из pandas в datetime.datetime
 
-    :arg
-        table1 - таблица из table_from_txt в формате pandas.DataFrame
-        last_date1 - дата и время последней записи из таблицы
-
-    :return
-        pd.DataFrame
+    :arg table1 - таблица из table_from_txt в формате pandas.DataFrame
+    :arg last_date1 - дата и время последней записи из таблицы
     """
     table1[0], table1[6] = table1[0].map(lambda x: x.strip()), table1[6].map(lambda x: x.strip())  # удаляем пробелы по бокам
     table1[0], table1[6] = table1[0].map(lambda x: re.findall(r'\d', x)), table1[6].map(lambda x: re.findall(r'\d', x))  # позвращаем список только с цифрами
@@ -136,19 +125,15 @@ def reshape_table_from_txt(table1, last_date1):
     return table1
 
 
-def load_list_files_vp(name_table1):
+def load_list_files_vp(name_table1) -> pd.DataFrame:
     """
     Создает таблицу файлов линий вп из папки.
     1 столбец путь к файлуб, 2 столбец дата файла.
     С помощью столбца с датами можно можно справнивать последнюю дату записи в базе bd_oemz.bd3
 
-    :arg
-        name_table1 - наименование таблицы либо 'vp_164', либо 'vpx_94'
-
-    :return
-        pd.DataFrame
+    :arg name_table1 - наименование таблицы либо 'vp_164', либо 'vpx_94'
     """
-    path = r"\\172.16.4.1\{0}\report\*.txt".format(name_table1)
+    path = r"W:\{0}\report\*.txt".format(name_table1)
     files = glob.glob(path)
     files = pd.DataFrame(data=files, columns=['path'])
     files['date'] = files.path.map(parse_date_path)

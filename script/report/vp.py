@@ -12,13 +12,12 @@ from script.common.common import (
 from script.common.database import load_data_from_db
 
 
-def prep_vp_xlfile(vpname1):
+def prep_vp_xlfile(vpname1: str) -> None:
     """
     Подгаталивает файл эксель (загружает нужные данные на технические листы), выполняет макрос в файле и копирует
     готовый файл в папку с отчетами по плазме.
 
     :arg vpname1: str наименование vp линии в формате 'vp-94'
-    :return: execute
     """
     folder_path = {'vpx_94': '1.1.2 Отчёт по VPX 94', 'vp_164': '1.1.1 Отчёт по VP 164'}
     detail_table = prep_detail_vptable(vpname1)
@@ -41,12 +40,12 @@ def prep_vp_xlfile(vpname1):
     shutil.copy(path_file, copy_path)
 
 
-def prep_detail_vptable(vpname1):
+def prep_detail_vptable(vpname1: str):
     """
     Подготовка таблицы с детализированной информацией по vp линии
 
     :param vpname1: str наименование таблицы в виде 'vp_94'
-    :return:
+    :return: pd.DataFrame
     """
     cols_name = ['c_0', 'c_4', 'c_3', 'c_9', 'c_7', 'c_17']
     cur_date = dt.datetime.now().date()
@@ -97,7 +96,7 @@ def prep_gen_vptable(table1):
 
 def prep_plot_vpdata(table1):
     """
-    Из таблицы из prep_gen_vptable делатет 2 таблицы для графиков в файле ексель
+    Из таблицы prep_gen_vptable делатет 2 таблицы для графиков в файле ексель
     1) КИО по датам и сменам
     2) КПД по датам и сменам
 

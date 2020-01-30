@@ -17,15 +17,18 @@ from script.report.vp import prep_vp_xlfile
 
 
 if __name__ == '__main__':
-    cur_year = dt.datetime.now().year
+    CUR_YEAR = dt.datetime.now().year
+    VP_164 = 'VP_164'
+    VPX_94 = 'VPX_94'
+    PATH_PLAZMA = r'W:\Plasma\REPORT\{0}'.format(CUR_YEAR)
 
     """Блок с ETL можно сделать в мультипроцессе ТОЧНО!"""
     check_func(load_nomenclature)
     check_func(load_inputs)
     check_func(load_clients)
-    check_func(load_vp, ('vpx_94',))
-    check_func(load_vp, ('vp_164',))
-    check_func(load_plazma_tables, (r'\\172.16.4.1\plasma\REPORT\{0}'.format(cur_year),))
+    check_func(load_vp, (VP_164,))
+    check_func(load_vp, (VPX_94,))
+    check_func(load_plazma_tables, (PATH_PLAZMA,))
 
     """Блок с REP можно сделать в мультипроцессе ВОЗМОЖНО(нужно проверить работу с ексель)!"""
     if check_data_in_db('plazma'):
