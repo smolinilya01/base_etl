@@ -131,17 +131,14 @@ def zero_time_dt(dt1):
     return dt1
 
 
-def symbols_for_query(name_table1, cur1):
+def symbols_for_query(name_table1: str, cur1):
     """
     Возвращает 2 списка
 
-    :arg
-        name_table1 - str like 'vp_164'
-        cur1 - объект sqlite3.connection.cursor
-
-    :returns
-        cols_for_query - список столбцов в которые нужно добавить значения (все столбцы в таблице name_table1 кроме id)
-        syms_for_query - список из необходиого кол-ва знаков ? для запроса
+    :arg name_table1 - str like 'vp_164'
+    :arg cur1 - объект sqlite3.connection.cursor
+    :return cols_for_query - список столбцов в которые нужно добавить значения (все столбцы в таблице name_table1 кроме id)
+    :return syms_for_query - список из необходиого кол-ва знаков ? для запроса
     """
     cols = return_name_cols(name_table1, cur1)
     cols_for_query = ','.join(cols)
@@ -149,16 +146,12 @@ def symbols_for_query(name_table1, cur1):
     return cols_for_query, syms_for_query
 
 
-def return_name_cols(table1, cur1):
+def return_name_cols(table1: str, cur1) -> tuple:
     """
     Возвращает список наименований столбцов из таблицы table1 базы данных bd_oemz.bd3
 
-    :arg
-        table1 - str like 'vp_164'
-        cur1 - объект sqlite3.connection.cursor
-
-    :return
-        tuple
+    :arg table1 - str like 'vp_164'
+    :arg cur1 - объект sqlite3.connection.cursor
     """
     cur1.execute(f"""pragma table_info({table1})""")
     names_col = cur1.fetchall()
@@ -168,13 +161,12 @@ def return_name_cols(table1, cur1):
     return names_col
 
 
-def check_data_in_db(name_data1):
+def check_data_in_db(name_data1) -> bool:
     """
     Проверяет, есть ли сегодня загруженные данные по необходимым данным. Возвращает bool
     Используется для определения, нужно ли производить формировние отчета
 
     :param name_data1: str наименование данных, которые надоп роверить
-    :return: bool
     """
     with conn_bd_oemz() as conn:
         cur = conn.cursor()
@@ -226,7 +218,7 @@ def run_macro(path1, name_macros):
         raise XlFileError
 
 
-def load_data_from_db(table_name1, cols_name1, date_col=None, start_date=None, end_date=None):
+def load_data_from_db(table_name1, cols_name1, date_col=None, start_date=None, end_date=None) -> pd.DataFrame:
     """
     Универсальная функция дял загрузки данных из базы для простого запроса
 
@@ -237,7 +229,6 @@ def load_data_from_db(table_name1, cols_name1, date_col=None, start_date=None, e
     :param end_date: дата конца выборки в формате dt.datetime (что бы выбрать включительно 2019.01.01,
                                 нужно либо dt.datetime(2019,1,2) либо dt.datetime(2019,1,2,23,59,59)
     :raise: если date_col, start_date, end_date не все заполнены
-    :return: pd.DataFrame
     """
     with conn_bd_oemz() as conn:
         cur = conn.cursor()
@@ -256,7 +247,7 @@ def load_data_from_db(table_name1, cols_name1, date_col=None, start_date=None, e
         return data
 
 
-def true_date(dt1):
+def true_date(dt1: dt.datetime):
     """
     Определяет дату со сдвигом, т.е. если время до 8-00 то этот день относиться к предыдущему дню
 

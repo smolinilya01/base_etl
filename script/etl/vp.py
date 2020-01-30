@@ -11,13 +11,14 @@ from script.common.common import (
 )
 
 
-def load_vp(name_table1):
+def load_vp(name_table1: str):
     """
     Загружает данные по станку в таблицу name_table1 базы bd_oemz.bd3
 
     :arg
         name_table1 - наименование таблицы либо 'vp_164', либо 'vpx_94'
     """
+    name_table1 = name_table1.lower()  # поменялось местоположение файлов и папкки вп линий теперь с заглавными буквами
     with conn_bd_oemz() as conn:
         cur = conn.cursor()
         cur.execute(f"""CREATE TABLE IF NOT EXISTS {name_table1}(
@@ -64,7 +65,7 @@ def load_vp(name_table1):
         conn.commit()
 
 
-def last_date_from_vp_db(cur1, name_table1):
+def last_date_from_vp_db(cur1, name_table1: str):
     """
     Загружает последнюю дату (timestamp) записи из таблицы из базы bd_oemz.bd3
     Если вдруг нет данных в таблице и вернулся None, то значение last_date = dt.datetime(year=2000, month=1, day=1),
@@ -134,7 +135,7 @@ def reshape_table_from_txt(table1, last_date1):
     return table1
 
 
-def load_list_files_vp(name_table1):
+def load_list_files_vp(name_table1: str):
     """
     Создает таблицу файлов линий вп из папки.
     1 столбец путь к файлуб, 2 столбец дата файла.
@@ -146,7 +147,7 @@ def load_list_files_vp(name_table1):
     :return
         pd.DataFrame
     """
-    path = r"\\172.16.4.1\{0}\report\*.txt".format(name_table1)
+    path = r"W:\{0}\report\*.txt".format(name_table1)
     files = glob.glob(path)
     files = pd.DataFrame(data=files, columns=['path'])
     files['date'] = files.path.map(parse_date_path)
