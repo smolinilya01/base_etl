@@ -8,6 +8,7 @@ import xlrd
 from typing import Union
 from script.common.common import to_datetime_in_list
 from script.common.database import (conn_bd_oemz, symbols_for_query)
+from script.common.error import MethodAccountingFileError
 
 
 def load_plazma_tables(path1: str) -> None:
@@ -114,9 +115,19 @@ def get_plazma_files(path1) -> pd.DataFrame:
     files = [r[0] + '\\' + i for r in files for i in r[2] if len(r[2]) > 0 if 'xls' in i]  # choice only xls files
     files = pd.DataFrame(data=files, columns=['path'])
     files['base_name'] = files['path'].map(lambda x: os.path.basename(x))
-    files['dt_change'] = files['path'].map(lambda x: dt.datetime.fromtimestamp(os.path.getctime(x)))
+    files['dt_change'] = files['path'].map(date_accounting_file(method='change'))
     files = files.sort_values(by='dt_change')
     return files
+
+
+def date_accounting_file(method: str = 'create'):
+    """Выбираем какую дату учета файла использовать"""
+    if method == 'create':
+        return lambda x: dt.datetime.fromtimestamp(os.path.getctime(x))
+    elif method == 'change':
+        return lambda x: dt.datetime.fromtimestamp(os.path.getmtime(x))
+    else:
+        raise MethodAccountingFileError
 
 
 def collect_plazma_data(pl_files1, table1) -> pd.DataFrame:
