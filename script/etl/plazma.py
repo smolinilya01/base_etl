@@ -5,16 +5,16 @@ import pandas as pd
 import os
 import xlrd
 
+from typing import Union
 from script.common.common import to_datetime_in_list
 from script.common.database import (conn_bd_oemz, symbols_for_query)
 
 
-def load_plazma_tables(path1):
+def load_plazma_tables(path1: str) -> None:
     """
     Создание таблицы и индекса, если их не сущещствовало прописано в need_plazma_files.
 
-    :arg
-        path1 - путь к папке с файлами по плазме (для сравнения с файлами из базы)
+    :arg path1 - путь к папке с файлами по плазме (для сравнения с файлами из базы)
     """
     with conn_bd_oemz() as conn:
         cur = conn.cursor()
@@ -59,15 +59,12 @@ def load_plazma_tables(path1):
         conn.commit()
 
 
-def need_plazma_files(path1):
+def need_plazma_files(path1) -> pd.DataFrame:
     """
     Сначала пытаемся создать таблицу, потом пытаемся получить список файлов, загруженных в базу bd_oemz.bd3
 
-    :arg
-        path1 - путь к папке с файлами по плазме (для сравнения с файлами из базы)
-
-    :return
-        pd.DataFrame с данными о файлах, которые нужно загрузить с колонками 'path', 'base_name', 'dt_change'
+    :arg path1 - путь к папке с файлами по плазме (для сравнения с файлами из базы)
+    :return pd.DataFrame с данными о файлах, которые нужно загрузить с колонками 'path', 'base_name', 'dt_change'
     """
     exceptions_ = [r'\\172.16.4.1\plasma\REPORT\2019\ФЕВРАЛЬ 2019\ссз № 84040 карта № 7134                 10мм               12.02.2019.xls']  # файлы, которые не открываются или в неправильном или нечитаемом формате
     with conn_bd_oemz() as conn:
@@ -101,18 +98,17 @@ def need_plazma_files(path1):
         return need_files
 
 
-def get_plazma_files(path1):
+def get_plazma_files(path1) -> pd.DataFrame:
     """
     Возвращает таблицу с информацией по файлам PLAZMA
 
-    :arg
-        path1 - путь к папке с файлами по плазме
+    :arg path1 - путь к папке с файлами по плазме
 
-    :return
-        pd.DataFrame
-            1 колонка - путь к файлу
-            2 колонка - basename
-            3 колонка - datetime изменения файла
+    :return pd.DataFrame (
+    1 колонка - путь к файлу
+    2 колонка - basename
+    3 колонка - datetime изменения файла
+    )
     """
     files = os.walk(path1)
     files = [r[0] + '\\' + i for r in files for i in r[2] if len(r[2]) > 0 if 'xls' in i]  # choice only xls files
@@ -123,18 +119,15 @@ def get_plazma_files(path1):
     return files
 
 
-def collect_plazma_data(pl_files1, table1):
+def collect_plazma_data(pl_files1, table1) -> pd.DataFrame:
     """
     Функция собирает данные из файловпо плазме и формирует таблицу для загрузки в базу bd_oemz.bd3.
     Используются практически все параметры, указанные в файле (на возможное будущее)
     Столбцы с time измеряются в секундах
 
-    :arg
-        pl_files1 - список файлов like numpy.array
-        table1 - таблица pd.Dataframe из need_plazma_files
-
-    :return
-        pd.DataFrame с информацией из карты
+    :arg pl_files1 - список файлов like numpy.array
+    :arg table1 - таблица pd.Dataframe из need_plazma_files
+    :return pd.DataFrame с информацией из карты
     """
     coordinates = ((3, 2), (6, 2), (6, 7),
                    (14, 3), (16, 3),
@@ -174,15 +167,11 @@ def collect_plazma_data(pl_files1, table1):
     return data
 
 
-def del_empty(x):
+def del_empty(x) -> Union[str, int]:
     """
     Удаляем лишние эелементы из цифр и заменяем '' на 0
 
-    :arg
-        x - элемент в Series
-
-    :return
-        str
+    :arg x - элемент в Series
     """
     if type(x) is str:
         x = x.strip()
@@ -192,28 +181,24 @@ def del_empty(x):
     return x
 
 
-def get_sizes(text_size):
+def get_sizes(text_size) -> list:
     """
     Пребразует текстовое поле формата '6010mmx1500mmx4mm' в 3 величины: длина, ширина, толщина
 
-    :arg
-        text_size - текстовое поле формата '6010mmx1500mmx4mm'
-
-    :return
-        list(length, width, sickness)  - length, width, sickness in str
+    :arg text_size - текстовое поле формата '6010mmx1500mmx4mm'
+    :return list(length, width, sickness)  - length, width, sickness in str
     """
     text_size = text_size.replace('x', '')
     text_size = text_size.split('mm')
     return text_size
 
 
-def insert_records_of_loads(cur1, name1):
+def insert_records_of_loads(cur1, name1) -> None:
     """
     Добавляет запись о добавлении данных в нужную таблицу в базе bd_oemz.bd3 !без commit!
 
-    :arg
-        name1 - наименование таблицы, куда добавилась запись, string like 'inputs'
-        cur1 - объект sqlite3.connection.cursor
+    :arg name1 - наименование таблицы, куда добавилась запись, string like 'inputs'
+    :arg cur1 - объект sqlite3.connection.cursor
     """
     cur1.execute("""CREATE TABLE IF NOT EXISTS records_of_loads(
                     id INTEGER PRIMARY KEY,

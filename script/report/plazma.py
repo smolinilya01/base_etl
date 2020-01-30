@@ -15,30 +15,28 @@ from script.common.common import (
 from script.common.database import load_data_from_db
 
 
-def prep_plaz_xlfile():
+def prep_plaz_xlfile() -> None:
     """
     Подгаталивает файл эксель (загружает нужные данные на технические листы), выполняет макрос в файле и копирует
     готовый файл в папку с отчетами по плазме.
-
-    :return: execute
     """
     detail_table = prep_detail_plazdata()
     gen_table = prep_gen_plazdata(detail_table)
     plot_table = prep_plot_plazdata(gen_table)
 
-    path_file = r"\\oemz-fs01.oemz.ru\Works$\Analytics\Илья\Задание 11-1\plazma.xlsm"
-    load_table_in_xlsheet(detail_table, '1', path_file)
-    load_table_in_xlsheet(gen_table, '2', path_file)
-    load_table_in_xlsheet(plot_table, '3', path_file)
+    PATH_FILE = r"\\oemz-fs01.oemz.ru\Works$\Analytics\Илья\Задание 11-1\plazma.xlsm"
+    load_table_in_xlsheet(detail_table, '1', PATH_FILE)
+    load_table_in_xlsheet(gen_table, '2', PATH_FILE)
+    load_table_in_xlsheet(plot_table, '3', PATH_FILE)
 
-    run_macro(path_file, 'plazma_format')
+    run_macro(PATH_FILE, 'plazma_format')
 
     min_date = gen_table.date.min().strftime("%y%m%d")
     max_date = gen_table.date.max().strftime("%y%m%d")
     cur_date = dt.datetime.now().date().strftime("%y%m%d")
     name_copy_f = f"{cur_date}_Отчёт_по_Плазме_за_период_{min_date}-{max_date}.xlsm"
     copy_path = r"\\172.16.4.1\aup\1.Отчеты\1.1. Отчёты по производству\1.1.3 Отчёт по Плазме" + "\\" + name_copy_f
-    shutil.copy(path_file, copy_path)
+    shutil.copy(PATH_FILE, copy_path)
 
 
 def prep_detail_plazdata():
