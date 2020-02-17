@@ -67,7 +67,7 @@ def need_plazma_files(path1) -> pd.DataFrame:
     :arg path1 - путь к папке с файлами по плазме (для сравнения с файлами из базы)
     :return pd.DataFrame с данными о файлах, которые нужно загрузить с колонками 'path', 'base_name', 'dt_change'
     """
-    exceptions_ = [r'\\172.16.4.1\plasma\REPORT\2019\ФЕВРАЛЬ 2019\ссз № 84040 карта № 7134                 10мм               12.02.2019.xls']  # файлы, которые не открываются или в неправильном или нечитаемом формате
+    exceptions_ = [r'W:\Plasma\REPORT\2019\ФЕВРАЛЬ 2019\ссз № 84040 карта № 7134                 10мм               12.02.2019.xls']  # файлы, которые не открываются или в неправильном или нечитаемом формате
     with conn_bd_oemz() as conn:
         cur = conn.cursor()
         cur.execute("""CREATE TABLE IF NOT EXISTS plazma_files(

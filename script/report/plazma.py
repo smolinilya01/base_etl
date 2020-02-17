@@ -24,7 +24,7 @@ def prep_plaz_xlfile() -> None:
     gen_table = prep_gen_plazdata(detail_table)
     plot_table = prep_plot_plazdata(gen_table)
 
-    PATH_FILE = r"\\oemz-fs01.oemz.ru\Works$\Analytics\Илья\Задание 11-1\plazma.xlsm"
+    PATH_FILE = r"..\script\common\files\plazma.xlsm"
     load_table_in_xlsheet(detail_table, '1', PATH_FILE)
     load_table_in_xlsheet(gen_table, '2', PATH_FILE)
     load_table_in_xlsheet(plot_table, '3', PATH_FILE)
@@ -35,7 +35,7 @@ def prep_plaz_xlfile() -> None:
     max_date = gen_table.date.max().strftime("%y%m%d")
     cur_date = dt.datetime.now().date().strftime("%y%m%d")
     name_copy_f = f"{cur_date}_Отчёт_по_Плазме_за_период_{min_date}-{max_date}.xlsm"
-    copy_path = r"\\172.16.4.1\aup\1.Отчеты\1.1. Отчёты по производству\1.1.3 Отчёт по Плазме" + "\\" + name_copy_f
+    copy_path = r"W:\1.1. Отчеты по производству\1.1.3 Отчёт по Плазме" + "\\" + name_copy_f
     shutil.copy(PATH_FILE, copy_path)
 
 

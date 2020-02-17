@@ -16,6 +16,7 @@ def load_table_in_xlsheet(table1, sh_name1, path1):
     :param path1: путь к файлу ексель с макросом
     :return: execute добавляет данные на лист
     """
+    path1 = os.path.abspath(path1)
     app = xw.App(visible=False)
     wb = xw.Book(path1)
     ws = wb.sheets.add(name=sh_name1)
@@ -35,6 +36,7 @@ def run_macro(path1, name_macros):
     :return: execute
     """
     if os.path.exists(path1):
+        path1 = os.path.abspath(path1)
         excel_macro = win32com.client.DispatchEx("Excel.Application")
         excel_path = os.path.expanduser(path1)
         workbook = excel_macro.Workbooks.Open(Filename=excel_path, ReadOnly=1)
