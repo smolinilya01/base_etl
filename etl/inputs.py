@@ -5,8 +5,8 @@ import glob
 import pandas as pd
 import os
 
-from script.common.database import conn_bd_oemz
-from script.common.common import (parse_date_point, to_datetime_in_list)
+from common.database import conn_bd_oemz
+from common.common import (parse_date_point, to_datetime_in_list)
 
 
 def load_inputs():

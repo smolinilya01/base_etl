@@ -5,15 +5,15 @@ Execution script with windows planner
 
 import datetime as dt
 
-from script.common.common import check_func
-from script.common.database import check_data_in_db
-from script.etl.nomenclature import load_nomenclature
-from script.etl.inputs import load_inputs
-from script.etl.clients import load_clients
-from script.etl.vp import load_vp
-from script.etl.plazma import load_plazma_tables
-from script.report.plazma import prep_plaz_xlfile
-from script.report.vp import prep_vp_xlfile
+from common.common import check_func
+from common.database import check_data_in_db
+from etl.nomenclature import load_nomenclature
+from etl.inputs import load_inputs
+from etl.clients import load_clients
+from etl.vp import load_vp
+from etl.plazma import load_plazma_tables
+from report.plazma import prep_plaz_xlfile
+from report.vp import prep_vp_xlfile
 
 
 if __name__ == '__main__':
