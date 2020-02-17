@@ -24,7 +24,7 @@ def prep_vp_xlfile(vpname1: str) -> None:
     gen_table = prep_gen_vptable(detail_table)
     kio_table, kpd_table = prep_plot_vpdata(gen_table)
 
-    path_file = r"\\oemz-fs01.oemz.ru\Works$\Analytics\Илья\Задание 11-1\{0}.xlsm".format(vpname1)
+    path_file = r"..\script\common\files\{0}.xlsm".format(vpname1)
     load_table_in_xlsheet(detail_table, '1', path_file)
     load_table_in_xlsheet(gen_table, '2', path_file)
     load_table_in_xlsheet(kio_table, '3', path_file)
@@ -36,7 +36,7 @@ def prep_vp_xlfile(vpname1: str) -> None:
     max_date = gen_table.date.max().strftime("%y%m%d")
     cur_date = dt.datetime.now().date().strftime("%y%m%d")
     name_copy_f = f"{cur_date}_Отчёт_по_{vpname1}_за_период_{min_date}-{max_date}.xlsm"
-    copy_path = r"\\172.16.4.1\aup\1.Отчеты\1.1. Отчёты по производству\{0}".format(folder_path[vpname1]) + "\\" + name_copy_f
+    copy_path = r"W:\1.1. Отчеты по производству\{0}".format(folder_path[vpname1]) + "\\" + name_copy_f
     shutil.copy(path_file, copy_path)
 
 

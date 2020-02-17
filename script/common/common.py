@@ -63,7 +63,7 @@ def parse_date_path(path1):
     Парсит полный путь и достает дату
 
     :arg
-        path1 - путь типа '\\172.16.4.1\vp_164\report\10_10_2019.txt'
+        path1 - путь типа "W:\VP_164\report\17_02_2020.txt"
 
     :return
         dt.datetime
