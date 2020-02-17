@@ -4,6 +4,7 @@ Execution script with windows planner
 """
 
 import datetime as dt
+import os
 
 from common.common import check_func
 from common.database import check_data_in_db
@@ -17,6 +18,7 @@ from report.vp import prep_vp_xlfile
 
 
 if __name__ == '__main__':
+    os.chdir(r'C:\LOG_1\base_etl')  # need for correct execute in windows planner
     CUR_YEAR = dt.datetime.now().year
     VP_164 = 'VP_164'
     VPX_94 = 'VPX_94'
