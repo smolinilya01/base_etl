@@ -6,13 +6,13 @@ import re
 import os.path
 import shutil
 
-from script.common.excel import (
+from common.excel import (
     load_table_in_xlsheet, run_macro, convert_xltime
 )
-from script.common.common import (
+from common.common import (
     zero_time_dt, true_date, def_smena, date_range
 )
-from script.common.database import load_data_from_db
+from common.database import load_data_from_db
 
 
 def prep_plaz_xlfile() -> None:
@@ -24,7 +24,7 @@ def prep_plaz_xlfile() -> None:
     gen_table = prep_gen_plazdata(detail_table)
     plot_table = prep_plot_plazdata(gen_table)
 
-    PATH_FILE = r"..\script\common\files\plazma.xlsm"
+    PATH_FILE = r".\common\files\plazma.xlsm"
     load_table_in_xlsheet(detail_table, '1', PATH_FILE)
     load_table_in_xlsheet(gen_table, '2', PATH_FILE)
     load_table_in_xlsheet(plot_table, '3', PATH_FILE)

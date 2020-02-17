@@ -4,7 +4,7 @@ import os
 import xlwings as xw
 import win32com.client
 
-from script.common.error import XlFileError
+from common.error import XlFileError
 
 
 def load_table_in_xlsheet(table1, sh_name1, path1):

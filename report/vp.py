@@ -3,13 +3,13 @@
 import datetime as dt
 import shutil
 
-from script.common.excel import (
+from common.excel import (
     load_table_in_xlsheet, run_macro, convert_xltime,
 )
-from script.common.common import (
+from common.common import (
     zero_time_dt, true_date, def_smena, date_range
 )
-from script.common.database import load_data_from_db
+from common.database import load_data_from_db
 
 
 def prep_vp_xlfile(vpname1: str) -> None:
@@ -24,7 +24,7 @@ def prep_vp_xlfile(vpname1: str) -> None:
     gen_table = prep_gen_vptable(detail_table)
     kio_table, kpd_table = prep_plot_vpdata(gen_table)
 
-    path_file = r"..\script\common\files\{0}.xlsm".format(vpname1)
+    path_file = r".\common\files\{0}.xlsm".format(vpname1)
     load_table_in_xlsheet(detail_table, '1', path_file)
     load_table_in_xlsheet(gen_table, '2', path_file)
     load_table_in_xlsheet(kio_table, '3', path_file)

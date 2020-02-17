@@ -6,9 +6,9 @@ import os
 import xlrd
 
 from typing import Union
-from script.common.common import to_datetime_in_list
-from script.common.database import (conn_bd_oemz, symbols_for_query)
-from script.common.error import MethodAccountingFileError
+from common.common import to_datetime_in_list
+from common.database import (conn_bd_oemz, symbols_for_query)
+from common.error import MethodAccountingFileError
 
 
 def load_plazma_tables(path1: str) -> None:

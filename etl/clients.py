@@ -2,8 +2,8 @@
 
 import pandas as pd
 
-from script.common.database import (conn_bd_oemz, insert_records_of_loads)
-from script.etl.inputs import pick_last_inputs
+from common.database import (conn_bd_oemz, insert_records_of_loads)
+from etl.inputs import pick_last_inputs
 
 
 def load_clients():

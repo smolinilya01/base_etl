@@ -4,7 +4,7 @@ import datetime as dt
 import sqlite3 as sql
 import pandas as pd
 
-from script.common.error import StartEndDateError
+from common.error import StartEndDateError
 
 
 def conn_bd_oemz() -> sql.connect:

@@ -5,10 +5,10 @@ import glob
 import pandas as pd
 import re
 
-from script.common.common import (
+from common.common import (
     parse_date_path, zero_time_dt, to_datetime_in_list
 )
-from script.common.database import (
+from common.database import (
     conn_bd_oemz, insert_records_of_loads, symbols_for_query
 )
 
