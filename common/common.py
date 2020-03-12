@@ -20,7 +20,7 @@ def check_func(foo, arg=None):
         except:
             logging.basicConfig(
                 level=logging.INFO, format='%(asctime)s - %(levelname)s - %(message)s',
-                filename=r"..\LOG_LOAD_DB.log"
+                filename=r".\LOG_LOAD_DB.log"
             )
             logging.info(f"{foo.__name__} was down")
     else:
@@ -29,7 +29,7 @@ def check_func(foo, arg=None):
         except:
             logging.basicConfig(
                 level=logging.INFO, format='%(asctime)s - %(levelname)s - %(message)s',
-                filename=r"..\LOG_LOAD_DB.log"
+                filename=r".\LOG_LOAD_DB.log"
             )
             logging.info(f"{foo.__name__} was down")
 
