@@ -7,6 +7,19 @@ import win32com.client
 from common.error import XlFileError
 
 
+class ContManagExcel(xw.App):
+    """xw.App с поведением контекстного менеджера"""
+    def __init__(self, *args, **kwargs):
+        super().__init__(args, kwargs)
+
+    def __enter__(self):
+        return self
+
+    def __exit__(self, exc_type, exc_value, traceback):
+        # print(traceback)
+        self.kill()
+
+
 def load_table_in_xlsheet(table1, sh_name1, path1):
     """
     Загружает таблицу на лист sh_name1 в файл эксель
@@ -17,13 +30,17 @@ def load_table_in_xlsheet(table1, sh_name1, path1):
     :return: execute добавляет данные на лист
     """
     path1 = os.path.abspath(path1)
-    app = xw.App(visible=False)
-    wb = xw.Book(path1)
-    ws = wb.sheets.add(name=sh_name1)
-    ws.range('A1').options(index=False, header=False).value = table1
-    wb.save()
-    wb.close()
-    app.kill()
+    with ContManagExcel(visible=False) as app:
+        wb = xw.Book(path1)
+        try:
+            wb.sheets[sh_name1].delete()
+        except:
+            pass
+
+        ws = wb.sheets.add(name=sh_name1)
+        ws.range('A1').options(index=False, header=False).value = table1
+        wb.save()
+        wb.close()
 
 
 def run_macro(path1, name_macros):
@@ -37,14 +54,19 @@ def run_macro(path1, name_macros):
     """
     if os.path.exists(path1):
         path1 = os.path.abspath(path1)
-        excel_macro = win32com.client.DispatchEx("Excel.Application")
         excel_path = os.path.expanduser(path1)
-        workbook = excel_macro.Workbooks.Open(Filename=excel_path, ReadOnly=1)
-        query = os.path.basename(path1) + '!Module1.' + name_macros
-        excel_macro.Application.Run(query)
-        workbook.Save()
-        excel_macro.Application.Quit()
-        del excel_macro
+        try:
+            excel_macro = win32com.client.DispatchEx("Excel.Application")
+            workbook = excel_macro.Workbooks.Open(Filename=excel_path, ReadOnly=1)
+            query = os.path.basename(path1) + '!Module1.' + name_macros
+            excel_macro.Application.Run(query)
+            workbook.Save()
+            excel_macro.Application.Quit()
+            del excel_macro
+        except:
+            excel_macro.Application.Quit()
+            del excel_macro
+            raise BaseException(f'Ошибка в работе макроса в файле {excel_path}')
     else:
         raise XlFileError
 
