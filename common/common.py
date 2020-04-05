@@ -138,28 +138,3 @@ def date_range(series1):
 
     table = pd.DataFrame(data=((d, s) for d in tuple_dt for s in (1, 2)), columns=['date', 'smena'])
     return table
-
-
-def houres_in_time(val: float) -> time:
-    """Преобразовывает часы в time
-
-    :param val: время в часах
-    """
-    total_seconds = val * 60 * 60
-    houres = int(total_seconds // (60 * 60))
-    minutes = int(total_seconds % (60 * 60) // 60)
-    seconds = int(total_seconds % (60 * 60) % 60)
-    return time(hour=houres, minute=minutes, second=seconds)
-
-
-def time_in_seconds(val_time: time) -> int:
-    """Переводит time в кол-во секунд
-
-    :param val_time: время в часах
-    """
-    seconds = (
-        val_time.hour * 3600 +
-        val_time.minute * 60 +
-        val_time.second
-    )
-    return seconds
