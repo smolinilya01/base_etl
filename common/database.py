@@ -5,6 +5,7 @@ import sqlite3 as sql
 import pandas as pd
 
 from common.error import StartEndDateError
+from pypyodbc import connect
 
 
 def conn_bd_oemz() -> sql.connect:
@@ -113,3 +114,8 @@ def insert_records_of_loads(cur1, name1) -> None:
                     table_ TEXT NOT NULL)""")
     row = (dt.datetime.now(), name1)
     cur1.execute("""INSERT INTO records_of_loads(date,table_) VALUES (?,?)""", row)
+
+
+def conn_pobeda() -> connect:
+    """Возвращает соединение к базе победы"""
+    return connect("Driver={SQL Server};Server=OEMZ-POBEDA;Database=ProdMgrDB;uid=1C_Exchange;pwd=1")
