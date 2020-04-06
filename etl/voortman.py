@@ -4,9 +4,10 @@ from common.database import conn_pobeda
 from common.common import date_range
 from pandas import read_sql_query, DataFrame, read_csv
 from datetime import date
+from math import ceil
 
 
-NEED_MACHINE = 'Voortman V304'
+NEED_MACHINE = 'Voortman V304'  # 'Microstep Mg6001', 'Voortman V304', 'Гильотина'
 
 
 def prepare_voortman_data() -> None:
@@ -41,7 +42,7 @@ def details_table(conn: conn_pobeda) -> None:
     ]
     data = data[need_columns]
 
-    data.to_csv(
+    data.iloc[:5000, :].to_csv(
         r'.\common\files\voortman_2.csv',
         sep=";",
         encoding='ansi',
@@ -65,6 +66,7 @@ def cards_table(conn: conn_pobeda, merge_table: DataFrame) -> None:
         map(lambda x: date(year=x.year, month=x.month, day=x.day))
     data = data.sort_values(by='date_done', ascending=False)
 
+    data = data.drop_duplicates()
     data['sheets_mass'] = data['sheets_amount'] * data['massa_of_sheet']
     data['full_time'] = data['sheets_amount'] * data['full_calc_time']
     data['sum_perimeter'] = data['sheets_amount'] * data['all_full_perimeter']
@@ -74,7 +76,7 @@ def cards_table(conn: conn_pobeda, merge_table: DataFrame) -> None:
     data['full_time'] = data['full_time'].\
         map(lambda x: x / 24)  # екселевский формат времени = доля от дня
 
-    data.to_csv(
+    data.iloc[:1000, :].to_csv(
         r'.\common\files\voortman_1.csv',
         sep=";",
         encoding='ansi',
@@ -90,29 +92,50 @@ def general_table() -> None:
         encoding='ansi',
         parse_dates=['date_done']
     )
+    details = read_csv(
+        r'.\common\files\voortman_2.csv',
+        sep=";",
+        encoding='ansi',
+        parse_dates=['date_done']
+    )
 
-    sum_mass_days = cards.groupby(by=['date_done'])\
-        ['massa_of_sheet'].\
+    details = details.\
+        groupby(by=['date_done', 'number_of_task', 'card_number'])\
+        ['full_perimeter', 'full_mass'].\
         sum().\
         reset_index().\
-        rename(columns={'massa_of_sheet': 'day_mass'})
-    cards = cards.merge(sum_mass_days, how='left', on='date_done')
+        rename(columns={'full_perimeter': 'perimeter'}).\
+        merge(cards[[
+            'date_done', 'number_of_task', 'card_number',
+            'sum_perimeter', 'coefficient_of_use', 'full_time'
+            ]], how='left', on=['date_done', 'number_of_task', 'card_number'])
+    # определение доли времени относительно вырезанного периметра за день
+    details['full_time'] = details['perimeter'] / details['sum_perimeter'] * details['full_time']
+    details['sheets_amount'] = (details['perimeter'] / details['sum_perimeter']).\
+        map(lambda x: ceil(x))
 
-    cards['KIM'] = cards['coefficient_of_use'] * (cards['massa_of_sheet'] / cards['day_mass'])
+    sum_mass_days = details.groupby(by=['date_done'])\
+        ['full_mass'].\
+        sum().\
+        reset_index().\
+        rename(columns={'full_mass': 'day_mass'})  # сумма масс за день
+    details = details.merge(sum_mass_days, how='left', on='date_done')
+    # KIM рассчитывается относительно масс деталей
+    details['KIM'] = details['coefficient_of_use'] * (details['full_mass'] / details['day_mass'])
 
-    cards = cards.groupby(by=['date_done'])\
+    details = details.groupby(by=['date_done'])\
         ['KIM', 'sheets_amount', 'full_time'].\
         sum().\
         reset_index()
-    cards['KPD'] = cards['full_time'] / (10.75 * 2 / 24)  # не по сменам, а по дням
-    cards['KIO'] = cards['full_time'] / (12 * 2 / 24)  # не по сменам, а по дням
+    details['KPD'] = details['full_time'] / (10.75 * 2 / 24)  # не по сменам, а по дням
+    details['KIO'] = details['full_time'] / (12 * 2 / 24)  # не по сменам, а по дням
 
-    dates = date_range(cards.loc[:, 'date_done'])\
+    dates = date_range(details.loc[:, 'date_done'])\
         ['date'].\
         unique()
     table = DataFrame(data=dates, columns=['date_done']).\
         sort_values(by='date_done', ascending=False).\
-        merge(cards, on='date_done', how='left').\
+        merge(details, on='date_done', how='left').\
         fillna(value=0)
 
     need_columns = [
@@ -120,7 +143,7 @@ def general_table() -> None:
         'sheets_amount', 'KIM', 'full_time'
     ]
     table = table[need_columns]
-    table.to_csv(
+    table.iloc[:90, :].to_csv(
         r'.\common\files\voortman_3.csv',
         sep=";",
         encoding='ansi',
