@@ -3,7 +3,7 @@
 from common.database import conn_pobeda
 from common.common import date_range
 from pandas import read_sql_query, DataFrame, read_csv
-from datetime import date, time
+from datetime import date
 
 
 NEED_MACHINE = 'Voortman V304'
@@ -60,13 +60,14 @@ def cards_table(conn: conn_pobeda, merge_table: DataFrame) -> None:
 
     data = data.merge(merge_table, on='number_of_task', how='left')
     data = data.query(f"name_device == '{NEED_MACHINE}'")
+    del data['name_device']
     data['date_done'] = data['date_done'].\
         map(lambda x: date(year=x.year, month=x.month, day=x.day))
     data = data.sort_values(by='date_done', ascending=False)
 
     data['sheets_mass'] = data['sheets_amount'] * data['massa_of_sheet']
-    data['full_time'] = data['sheets_amount'] + data['full_calc_time']
-    data['sum_perimeter'] = data['sheets_amount'] + data['all_full_perimeter']
+    data['full_time'] = data['sheets_amount'] * data['full_calc_time']
+    data['sum_perimeter'] = data['sheets_amount'] * data['all_full_perimeter']
 
     data['full_calc_time'] = data['full_calc_time'].\
         map(lambda x: x / 24)  # екселевский формат времени = доля от дня
