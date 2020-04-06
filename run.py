@@ -20,7 +20,7 @@ from report.voortman import voortman_report
 
 
 if __name__ == '__main__':
-    os.chdir(r'C:\LOG_1\base_etl')  # need for correct execute in windows planner
+    # os.chdir(r'C:\LOG_1\base_etl')  # need for correct execute in windows planner
     CUR_YEAR = dt.datetime.now().year
     VP_164 = 'VP_164'
     VPX_94 = 'VPX_94'
