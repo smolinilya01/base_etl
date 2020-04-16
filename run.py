@@ -14,9 +14,11 @@ from etl.clients import load_clients
 from etl.vp import load_vp
 from etl.plazma import load_plazma_tables
 from etl.voortman import prepare_voortman_data
+from etl.visit_etl import prepare_visit_data
 from report.plazma import prep_plaz_xlfile
 from report.vp import prep_vp_xlfile
 from report.voortman import voortman_report
+from report.visit import visit_report
 
 
 if __name__ == '__main__':
@@ -34,13 +36,19 @@ if __name__ == '__main__':
     check_func(load_vp, (VPX_94,))
     check_func(load_plazma_tables, (PATH_PLAZMA,))
     check_func(prepare_voortman_data)
+    check_func(prepare_visit_data)
 
     """Блок с REP можно сделать в мультипроцессе ВОЗМОЖНО(нужно проверить работу с ексель)!"""
     if check_data_in_db('plazma'):
         check_func(prep_plaz_xlfile)
-    if check_data_in_db('vpx_94'):
-        check_func(voortman_report)
+
+    check_func(voortman_report)
+
     if check_data_in_db('vp_164'):
         check_func(prep_vp_xlfile, ('vp_164',))
     if check_data_in_db('vpx_94'):
         check_func(prep_vp_xlfile, ('vpx_94',))
+    if check_data_in_db('vpx_94'):
+        check_func(prep_vp_xlfile, ('vpx_94',))
+
+    check_func(visit_report)
