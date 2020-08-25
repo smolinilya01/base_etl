@@ -19,7 +19,9 @@ def prep_vp_xlfile(vpname1: str) -> None:
 
     :arg vpname1: str наименование vp линии в формате 'vp-94'
     """
-    folder_path = {'vpx_94': '1.1.2 Отчёт по VPX 94', 'vp_164': '1.1.1 Отчёт по VP 164'}
+    folder_path = {'vpx_94': '1.1.2 Отчёт по VPX 94',
+                   'vp_164': '1.1.1 Отчёт по VP 164',
+                   'vp_184': '1.1.7 Отчёт по VP 184'}
     detail_table = prep_detail_vptable(vpname1)
     gen_table = prep_gen_vptable(detail_table)
     kio_table, kpd_table = prep_plot_vpdata(gen_table)
@@ -62,7 +64,12 @@ def prep_detail_vptable(vpname1: str):
     table['smena'] = table['datetime'].map(def_smena)
     table['start_oper'] = table['datetime']
     table['end_oper'] = (table['datetime'] + table['dur_oper'].map(lambda x: dt.timedelta(seconds=x)))
-    table['ind_plet'] = table['ind_plet'].replace({2: 1, 1: 0})
+
+    if vpname1 == 'vp_184':
+        table['ind_plet'] = 0
+    else:
+        table['ind_plet'] = table['ind_plet'].replace({2: 1, 1: 0})
+
     table = convert_xltime(table, ['dur_oper'])
     table = table[['date', 'smena', 'nomenclature', 'marka', 'mass', 'start_oper', 'end_oper', 'dur_oper', 'ind_plet']]
     table = table[~(table['date'] == table['date'].min())]  # самая ранняя (маленькая) дата убирается, т.к. при рассчете true_date датасо временем до 8-00 переноситься на предыдущий день

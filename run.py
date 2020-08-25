@@ -23,6 +23,7 @@ if __name__ == '__main__':
     # os.chdir(r'C:\LOG_1\base_etl')  # need for correct execute in windows planner
     CUR_YEAR = dt.datetime.now().year
     VP_164 = 'VP_164'
+    VP_184 = 'VP_184'
     VPX_94 = 'VPX_94'
     PATH_PLAZMA = r'W:\Plasma\REPORT\{0}'.format(CUR_YEAR)
 
@@ -31,6 +32,7 @@ if __name__ == '__main__':
     check_func(load_inputs)
     check_func(load_clients)
     check_func(load_vp, (VP_164,))
+    check_func(load_vp, (VP_184,))
     check_func(load_vp, (VPX_94,))
     check_func(load_plazma_tables, (PATH_PLAZMA,))
     check_func(prepare_voortman_data)
@@ -38,9 +40,11 @@ if __name__ == '__main__':
     """Блок с REP можно сделать в мультипроцессе ВОЗМОЖНО(нужно проверить работу с ексель)!"""
     if check_data_in_db('plazma'):
         check_func(prep_plaz_xlfile)
-    if check_data_in_db('vpx_94'):
-        check_func(voortman_report)
+    check_func(voortman_report)
+
     if check_data_in_db('vp_164'):
         check_func(prep_vp_xlfile, ('vp_164',))
+    if check_data_in_db('vp_184'):
+        check_func(prep_vp_xlfile, ('vp_184',))
     if check_data_in_db('vpx_94'):
         check_func(prep_vp_xlfile, ('vpx_94',))

@@ -69,7 +69,11 @@ def need_plazma_files(path1) -> pd.DataFrame:
     """
     exceptions_ = [
         r'W:\Plasma\REPORT\2019\ФЕВРАЛЬ 2019\ссз № 84040 карта № 7134                 10мм               12.02.2019.xls',
-        r"W:\Plasma\REPORT\2020\Март 2020\8\по распоряжению зам нач цеха                           6мм                        07.03.2020.xls"
+        r"W:\Plasma\REPORT\2020\Март 2020\8\по распоряжению зам нач цеха                           6мм                        07.03.2020.xls",
+        r"W:\Plasma\REPORT\2020\Отчёт ССЗ Voortman V304 АПРЕЛЬ  2020.xlsx",
+        r"W:\Plasma\REPORT\2020\Отчёт ССЗ Voortman V304 М А Й  2020.xlsx",
+        r"W:\Plasma\REPORT\2020\Отчёт ССЗ Voortman V304 И Ю Н Ь 2020.xlsx",
+        r"W:\Plasma\REPORT\2020\Отчёт ССЗ Voortman V304 ИЮЛЬ 2020.xlsx"
     ]  # файлы, которые не открываются или в неправильном или нечитаемом формате
     with conn_bd_oemz() as conn:
         cur = conn.cursor()
