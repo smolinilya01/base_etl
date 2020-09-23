@@ -59,7 +59,7 @@ def prep_detail_vptable(vpname1: str):
         'c_0': 'datetime', 'c_4': 'nomenclature', 'c_3': 'marka',
         'c_9': 'mass', 'c_7': 'dur_oper', 'c_17': 'ind_plet'
     })
-
+    table['dur_oper'] = table['dur_oper'].map(lambda x: 30 * 60 if x > 30 * 60 else x)  # продолжительность операции ограничивается 30 минутами, 23.09.2020 было решено на совещании
     table['date'] = table['datetime'].map(true_date)
     table['smena'] = table['datetime'].map(def_smena)
     table['start_oper'] = table['datetime']
@@ -71,7 +71,31 @@ def prep_detail_vptable(vpname1: str):
         table['ind_plet'] = table['ind_plet'].replace({2: 1, 1: 0})
 
     table = convert_xltime(table, ['dur_oper'])
-    table = table[['date', 'smena', 'nomenclature', 'marka', 'mass', 'start_oper', 'end_oper', 'dur_oper', 'ind_plet']]
+
+    """Обработка начала и конца плетей, что бы потом """
+    if vpname1 == 'vp_184':
+        table['dur_plet'] = 0
+    else:
+        table['ind_plet_2'] = table['ind_plet'].copy().shift(periods=-1)  # сдвиг индикатора вверх на 1, что бы легче определить начало и конец
+        table['ind_plet_2'].iloc[-1] = 1  # заполнение последнего значения, что бы было 1
+        table['start_plet'] = table['start_oper'].\
+            where(table['ind_plet'] == 1, None).\
+            fillna(method='ffill')
+        table['end_plet'] = table['end_oper'].\
+            where(table['ind_plet_2'] == 1, None).\
+            fillna(method='bfill')
+        table['start_plet'].iloc[0] = table['start_oper'].iloc[0]
+        table['end_plet'].iloc[-1] = table['end_oper'].iloc[-1]
+        table['dur_plet'] = (table['end_plet'] - table['start_plet']).\
+            map(lambda x: x.seconds).\
+            where(table['ind_plet'] == 1, None)
+        table = convert_xltime(table, ['dur_plet'])
+
+    table = table[[
+        'date', 'smena', 'nomenclature', 'marka',
+        'mass', 'start_oper', 'end_oper',
+        'dur_oper', 'ind_plet', 'dur_plet'
+    ]]
     table = table[~(table['date'] == table['date'].min())]  # самая ранняя (маленькая) дата убирается, т.к. при рассчете true_date датасо временем до 8-00 переноситься на предыдущий день
     table = table.sort_values(by=['date', 'smena'], ascending=False)
     return table
