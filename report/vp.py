@@ -60,70 +60,80 @@ def prep_detail_vptable(vpname1: str):
         'c_0': 'datetime', 'c_4': 'nomenclature', 'c_3': 'marka',
         'c_9': 'mass', 'c_7': 'dur_oper', 'c_17': 'ind_plet'
     })
-    table['dur_oper'] = table['dur_oper'].map(lambda x: 30 * 60 if x > 30 * 60 else x)  # продолжительность операции ограничивается 30 минутами, 23.09.2020 было решено на совещании
+    table['dur_oper'] = table['dur_oper'].map(lambda x: 0 if x > 10 * 60 else x)  # продолжительность операции ограничивается 30 минутами, 23.09.2020 было решено на совещании
+    # table = table[table['dur_oper'] <= 10*60]
     table['date'] = table['datetime'].map(true_date)
     table['smena'] = table['datetime'].map(def_smena)
-    table['start_oper'] = table['datetime']
-    table['end_oper'] = (table['datetime'] + table['dur_oper'].map(lambda x: dt.timedelta(seconds=x)))
 
     if vpname1 == 'vp_184':
         table['ind_plet'] = 0
+        # на новой ВП линии указано время начала
+        table['start_oper'] = table['datetime']
+        table['end_oper'] = (table['datetime'] + table['dur_oper'].map(lambda x: dt.timedelta(seconds=x)))
+
     else:
         table['ind_plet'] = table['ind_plet'].replace({2: 1, 1: 0})
+        # на старых ВП линиях указано время окончания
+        table['end_oper'] = table['datetime']
+        table['start_oper'] = (table['datetime'] - table['dur_oper'].map(lambda x: dt.timedelta(seconds=x)))
 
     table = convert_xltime(table, ['dur_oper'])
 
+    # пока ушли от выбора наименьшего времени срезу продолжительности плети и суммв операций
+    # и остановились на сумме продолжительности операций
     """Обработка начала и конца плетей, что бы потом """
     if vpname1 == 'vp_184':
-        table['dur_plet'] = table['dur_oper']
+        table = table[[
+            'date', 'smena', 'nomenclature', 'marka',
+            'mass', 'start_oper', 'end_oper',
+            'dur_oper', 'ind_plet'
+        ]]
     else:
+        # определение начала плети и конца
         table['ind_plet_2'] = table['ind_plet'].copy().shift(periods=-1)  # сдвиг индикатора вверх на 1, что бы легче определить начало и конец
         table['ind_plet_2'].iloc[-1] = 1  # заполнение последнего значения, что бы было 1
+
         table['start_plet'] = table['start_oper'].\
             where(table['ind_plet'] == 1, None).\
             fillna(method='ffill')
+        table['start_plet'].iloc[0] = table['start_oper'].iloc[0]
+
         table['end_plet'] = table['end_oper'].\
             where(table['ind_plet_2'] == 1, None).\
             fillna(method='bfill')
-        table['start_plet'].iloc[0] = table['start_oper'].iloc[0]
         table['end_plet'].iloc[-1] = table['end_oper'].iloc[-1]
-        table['dur_plet'] = (table['end_plet'] - table['start_plet']).\
-            map(lambda x: x.seconds).\
-            where(table['ind_plet'] == 1, None)
-        table = convert_xltime(table, ['dur_plet'])
 
-        # для отчета в генеральную таблицу нужно учитывать комбинированное время, то есть
-        # меньшее из (суммы времени по операциям за плеть) и (разницы между
-        # концом последней операции плети с началом первой операции плети)
-        table['comp_plet'] = table['ind_plet'].replace({0: None})
-        table['comp_plet'] = table['comp_plet']\
-                             + pd.Series([i for i in range(1, len(table['comp_plet']+1))])
+        # создание уникального номера плети
+        table['number_plet'] = table['ind_plet'].replace({0: None})
+        table = table.reset_index()
+        table['number_plet'] = table['number_plet'] + table.index
 
-        copy_table = table.copy()  # копированная таблица для группировки
-        copy_table = copy_table[['date', 'nomenclature', 'start_oper', 'dur_oper', 'comp_plet']]
-        copy_table['comp_plet'] = copy_table['comp_plet'].fillna(method='ffill')
-        copy_table = copy_table.\
-            groupby(by=['comp_plet'])['dur_oper'].\
+        for_merge_table = table.copy()  # таблица с неповторяющимися номерами плетей
+        table['number_plet'] = table['number_plet'].fillna(method='ffill')
+        table = table[~(table['number_plet'].isna())]
+
+        # копированная таблица для группировки
+        group_table = table.copy().\
+            groupby(by=['number_plet'])['mass', 'dur_oper'].\
             sum().\
-            reset_index().\
-            rename(columns={'dur_oper': 'sum_dur_oper'})
+            reset_index()
 
-        table = table.merge(
-            copy_table,
-            on=['comp_plet'],
+        # тут старт операции и конец операции это уже старт и конец ПЛЕТИ
+        group_table = group_table.merge(
+            for_merge_table[['date', 'nomenclature', 'smena', 'start_plet', 'end_plet', 'number_plet', 'ind_plet']],
+            on='number_plet',
             how='left'
-        )
-        table['dur_combin'] = table['dur_plet'].\
-            where(table['dur_plet'] <= table['sum_dur_oper'], table['sum_dur_oper'])
-        table['dur_plet'] = table['dur_combin']  # затирание dur_plet на sum_dur_oper
+        ).rename(columns={'start_plet': 'start_oper', 'end_plet': 'end_oper'})
+        table = group_table
 
-    table = table[[
-        'date', 'smena', 'nomenclature', 'marka',
-        'mass', 'start_oper', 'end_oper',
-        'dur_oper', 'ind_plet', 'dur_plet'
-    ]]
+        table = table[[
+            'date', 'smena', 'nomenclature',
+            'mass', 'start_oper', 'end_oper',
+            'dur_oper', 'ind_plet'
+        ]]
+
     table = table[~(table['date'] == table['date'].min())]  # самая ранняя (маленькая) дата убирается, т.к. при рассчете true_date датасо временем до 8-00 переноситься на предыдущий день
-    table = table.sort_values(by=['date', 'smena'], ascending=False)
+    table = table.sort_values(by=['date', 'smena', 'start_oper'], ascending=False)
     return table
 
 
@@ -134,7 +144,7 @@ def prep_gen_vptable(table1):
     :param table1: pd.DataFrame таблица из prep_detail_vptable
     :return: pd.DataFrame
     """
-    cols_sum_table = ['date', 'smena', 'mass', 'dur_plet', 'ind_plet']
+    cols_sum_table = ['date', 'smena', 'mass', 'dur_oper', 'ind_plet']
     time_for_plet = 73 / (24*60*60)  # время в экселевском формате
     c_kpd = ((10.75 * 60 * 60) / (24 * 60 * 60))  # делитель для расчета кпд оператора (10.75 часов - это 10-45)
     c_kio = ((12 * 60 * 60) / (24 * 60 * 60))  # делитель для расчета кио
@@ -143,10 +153,10 @@ def prep_gen_vptable(table1):
         groupby(by=['date', 'smena']).\
         sum().\
         reset_index()
-    sum_table['dur_plet'] = sum_table['dur_plet'] + (sum_table['ind_plet'] * time_for_plet)  # ко времени выполнения операций прибавляется время на плеть (time_for_plet)
-    sum_table['kio'] = sum_table['dur_plet'] / c_kio
-    sum_table['kpd'] = (sum_table['dur_plet'] * 1.21) / c_kpd
-    sum_table = sum_table[['date', 'smena', 'kio', 'kpd', 'dur_plet', 'mass']]
+    sum_table['dur_oper'] = sum_table['dur_oper'] + (sum_table['ind_plet'] * time_for_plet)  # ко времени выполнения операций прибавляется время на плеть (time_for_plet)
+    sum_table['kio'] = sum_table['dur_oper'] / c_kio
+    sum_table['kpd'] = (sum_table['dur_oper'] * 1.21) / c_kpd
+    sum_table = sum_table[['date', 'smena', 'kio', 'kpd', 'dur_oper', 'mass']]
 
     done_table = date_range(sum_table.date)  # для добавления нулей, если смена пропущена
     gen_table = done_table.merge(sum_table, how='outer', on=['date', 'smena']).replace({None: 0})
