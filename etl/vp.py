@@ -179,6 +179,8 @@ def load_list_files_vp(name_table1) -> pd.DataFrame:
     path = r"W:\{0}\report\*.txt".format(name_table1)
     files = glob.glob(path)
     files = pd.DataFrame(data=files, columns=['path'])
+    if name_table1 == 'vpx_94':
+        files = files[~(files['path'].str.contains('22_10_2020 12_43', regex=False))]
     files['date'] = files.path.map(parse_date_path)
     files = files.sort_values(by=['date'])
     return files
